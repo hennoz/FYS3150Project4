@@ -2,6 +2,7 @@
 #include <random>
 #include <fstream>
 #include <iomanip>
+#include "analytical.h"
 
 using namespace std;
 
@@ -62,9 +63,9 @@ void MetropolisSampling ( int dim, int MCcycles, double T ) {
                         SpinMatrix[ix][PeriodicBoundary( iy, dim, 1 )] +
                         SpinMatrix[PeriodicBoundary( ix, dim, 1 )][iy]);
                 if ( RandomNumberGenerator( gen ) <= EnergyDifference[DeltaE + 8] ) {
-                    SpinMatrix[ix][iy] += -1.0; // Flip one spin => new configuration
-                    M += (double) 2*SpinMatrix[ix][iy];
-                    E += (double) DeltaE;
+                    SpinMatrix[ix][iy] *= -1.0; // Flip one spin => new configuration
+                    M += 2*SpinMatrix[ix][iy];
+                    E += DeltaE;
                 }
             }
         }
@@ -73,32 +74,39 @@ void MetropolisSampling ( int dim, int MCcycles, double T ) {
         ExpectVal[2] += M;
         ExpectVal[3] += M*M;
         ExpectVal[4] += fabs( M );
-
-
     }
-    double E_expectVal  = ExpectVal[0]/(( double ) MCcycles );
-    double E2_expectVal = ExpectVal[1]/(( double ) MCcycles );
-    double M_expectVal  = ExpectVal[2]/(( double ) MCcycles );
-    double M2_expectVal = ExpectVal[3]/(( double ) MCcycles );
-    double M_absolute   = ExpectVal[4]/(( double ) MCcycles );
-    double E_variance = ( E2_expectVal - E_expectVal*E_expectVal)/dim/dim;
-    double M_variance = ( M2_expectVal - M_absolute*M_absolute )/dim/dim;
+    double norm = 1/(( double ) MCcycles );
+    double meanE  = ExpectVal[0]*norm;
+    double meanE2 = ExpectVal[1]*norm;
+    double meanM  = ExpectVal[2]*norm;
+    double meanM2 = ExpectVal[3]*norm;
+    double absM   = ExpectVal[4]*norm;
+    double varE   = ( meanE2 - meanE*meanE );
+    double varM   = ( meanM2 - meanM*meanM );
 
-    cout << "T = " << T << endl;
-    cout << "Number of cycles = " << MCcycles << endl;
-    cout << "<E> = " << E_expectVal << endl;
-    cout << "|M| = " << M_absolute << endl;
-    cout << "Susceptibility = " << M_variance << endl;
-    cout << "C_V = " << E_variance << endl;
+    cout << endl;
+    cout << "T                = " << T << endl;
+    cout << "Number of cycles = " << MCcycles << endl << endl;
+
+    cout << "Metropolis gives " << endl;
+    cout << "<E>              = " << meanE << endl;
+    cout << "|M|              = " << absM << endl;
+    cout << "Heat capacity    = " << varE << endl;
+    cout << "Susceptibility   = " << varM << endl;
 }
-
 
 int main()
 {
     int dim = 2;
-    int MCcycles = 100;
+    int MCcycles = 10000000;
     double T = 1.0;
     MetropolisSampling ( dim, MCcycles, T );
+
+    cout << endl;
+    cout << "<E> (analytic)             = " << E_() << endl;
+    cout << "|M| (analytic)             = " << absM() << endl;
+    cout << "Heat capacity (analytic)   = " << CV() << endl;
+    cout << "Susceptibility (analytic)  = " << xhi() << endl;
     return 0;
 }
 
