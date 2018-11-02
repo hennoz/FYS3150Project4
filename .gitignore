@@ -12,6 +12,7 @@ build*
 ### C++ ###
 # Prerequisites
 *.d
+*.pro
 
 # Compiled Object files
 *.slo
