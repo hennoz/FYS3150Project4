@@ -3,127 +3,55 @@
 #include <fstream>
 #include <iomanip>
 #include "analytical.h"
+#include "metropolissampling.h"
+#include <mpi.h>
 
 using namespace std;
+ofstream outfile;
 
-inline int PeriodicBoundary( int i, int limit, int add ) {
-    return ( i + limit + add ) % ( limit );
-}
-//  Initial E, M, and SpinMatrix
-//  && => R-value reference
-void InitializeLattice ( int dim, double **SpinMatrix, double &E, double &M ) {
-    for ( int x = 0; x < dim; x++ ) {
-        for ( int y = 0; y < dim; y++ ) {
-            SpinMatrix[x][y] = 1.0;
-            M += ( double ) SpinMatrix[x][y];
-        }
-    }
-//    cout << "M = " << M << endl;
-    for ( int x = 0; x < dim; x++ ) {
-        for ( int y = 0; y < dim; y++ ) {
-            E -= ( double ) SpinMatrix[y][x]*
-                    ( SpinMatrix[PeriodicBoundary( y, dim, -1 )][x] +
-                    SpinMatrix[y][PeriodicBoundary( x, dim, -1 )] );
-        }
-    }
-//    cout << "E = " << E << endl;
-}
-
-void MetropolisSampling ( int dim, int MCcycles, double T ) {
-    //  Random number
-    random_device rd;
-    mt19937_64 gen( rd() );
-    //  Uniform "REAL" distribution for x \in [0,1]
-    uniform_real_distribution<double>RandomNumberGenerator( 0, 1 );
-    //  Initialize lattice spin values
-    uniform_int_distribution<int>SpinDistribution( 0, dim-1 );
-
-    double **SpinMatrix = new double*[dim];
-    for ( int i = 0; i < dim; i++ ) SpinMatrix[i] = new double[dim];
-    double *ExpectVal = new double[5];
-    double E, M = 0;
-    for ( int i = 0; i < 5; i++ ) ExpectVal[i] = 0;
-
-    InitializeLattice ( dim, SpinMatrix, E, M );
-    double *EnergyDifference = new double[17];
-
-    for ( int i = 0; i < 17; i += 4 ) EnergyDifference[i] = exp( -( i-8 )/T );
-
-    //  Start Monte Carlo cycle
-    for ( int cycle = 1; cycle <= MCcycles; cycle++ ) {
-        for ( int x = 0; x < dim; x++ ) {
-            for ( int y = 0; y < dim; y++ ) {
-                int ix = SpinDistribution( gen );
-//                cout << "ix = " << ix << endl;
-                int iy = SpinDistribution( gen );
-//                cout << "iy = " << iy << endl;
-                int DeltaE = 2*SpinMatrix[ix][iy]*
-                        ( SpinMatrix[ix][PeriodicBoundary( iy, dim, -1 )] +
-                        SpinMatrix[PeriodicBoundary( ix, dim, -1 )][iy] +
-                        SpinMatrix[ix][PeriodicBoundary( iy, dim, 1 )] +
-                        SpinMatrix[PeriodicBoundary( ix, dim, 1 )][iy]);
-                if ( RandomNumberGenerator( gen ) <= EnergyDifference[DeltaE + 8] ) {
-                    SpinMatrix[ix][iy] *= -1.0; // Flip one spin => new configuration
-                    M += 2*SpinMatrix[ix][iy];
-                    E += DeltaE;
-                }
-            }
-        }
-        ExpectVal[0] += E;
-        ExpectVal[1] += E*E;
-        ExpectVal[2] += M;
-        ExpectVal[3] += M*M;
-        ExpectVal[4] += fabs( M );
-    }
+void output( int dim, int MCcycles, double T, double *ExpectVal ) {
     double norm = 1/(( double ) MCcycles );
     double meanE  = ExpectVal[0]*norm;
     double meanE2 = ExpectVal[1]*norm;
     double meanM  = ExpectVal[2]*norm;
     double meanM2 = ExpectVal[3]*norm;
     double absM   = ExpectVal[4]*norm;
-    double varE   = ( meanE2 - meanE*meanE );
-    double varM   = ( meanM2 - meanM*meanM );
+    double varE   = ( meanE2 - meanE*meanE )/( dim*dim );
+    double varM   = ( meanM2 - meanM*meanM )/( dim*dim );
 
-    cout << endl;
-    cout << "T                = " << T << endl;
-    cout << "Number of cycles = " << MCcycles << endl << endl;
+    outfile.open("info.txt");
+    outfile << setw(15) << setprecision(8) << T;
+    outfile << setw(15) << setprecision(8) << meanE;
+    outfile << setw(15) << setprecision(8) << meanE2;
+    outfile << setw(15) << setprecision(8) << meanM;
+    outfile << setw(15) << setprecision(8) << meanM2;
+    outfile << setw(15) << setprecision(8) << absM;
+    outfile << setw(15) << setprecision(8) << varM/T;
+    outfile << setw(15) << setprecision(8) << varE/T/T;
+} // end output function
 
-    cout << "Metropolis gives " << endl;
-    cout << "<E>              = " << meanE << endl;
-    cout << "|M|              = " << absM << endl;
-    cout << "Heat capacity    = " << varE << endl;
-    cout << "Susceptibility   = " << varM << endl;
-}
 
 int main()
 {
+//     PROJECT 4b)
     int dim = 2;
-    int MCcycles = 10000000;
+    //  To get money results, 1e7 MCcycles is needed
+    int MCcycles = 1e6;
     double T = 1.0;
     MetropolisSampling ( dim, MCcycles, T );
 
     cout << endl;
     cout << "<E> (analytic)             = " << E_() << endl;
     cout << "|M| (analytic)             = " << absM() << endl;
-    cout << "Heat capacity (analytic)   = " << CV() << endl;
-    cout << "Susceptibility (analytic)  = " << xhi() << endl;
+    cout << "Heat capacity (analytic)   = " << CV()/( dim*dim ) << endl;
+    cout << "Susceptibility (analytic)  = " << xhi()/( dim*dim ) << endl;
+
+//    //  Project 4c)
+//    int dim = 20;
+//    int MCcycles = 1e5;
+//    double T = 2.4;
+//    MetropolisSampling( dim, MCcycles, T );
+
+    output( dim, MCcycles, T, ExpectVal);
     return 0;
 }
-
-//void WriteResultstoFile( int NSpins, int MCcycles, double T, double *ExpectVal ) {
-//    double E_expectVal  = ExpectVal[0]/(( double ) MCcycles );
-//    double E2_expectVal = ExpectVal[1]/(( double ) MCcycles );
-//    double M_expectVal  = ExpectVal[2]/(( double ) MCcycles );
-//    double M2_expectVal = ExpectVal[3]/(( double ) MCcycles );
-//    double M_absolute   = ExpectVal[4]/(( double ) MCcycles );
-//    // all expectation values are per spin, divide by 1/NSpins/NSpins
-//    double E_variance = ( E2_expectVal - E_expectVal*E_expectVal)/NSpins/NSpins;
-//    double M_variance = ( M2_expectVal - M_absolute*M_absolute )/NSpins/NSpins;
-//    ofstream ofile;
-//    ofile << setw(15) << setprecision(8) << T;
-//    ofile << setw(15) << setprecision(8) << E_expectVal/NSpins/NSpins;
-//    ofile << setw(15) << setprecision(8) << E_variance/T/T;
-//    ofile << setw(15) << setprecision(8) << M_expectVal/NSpins/NSpins;
-//    ofile << setw(15) << setprecision(8) << M_variance/T/T;
-//    ofile << setw(15) << setprecision(8) << M_absolute/NSpins/NSpins << endl;
-//} // end output function
