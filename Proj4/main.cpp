@@ -14,15 +14,18 @@ void output( int dim, double T, double *ExpectVal, int MCcycles, double timing )
 
 int main( int argc, char *argv[] )
 {
-    string filename;
-    int dim = 2;
-    int MCcycles = 1e5;
-    double InitialTemp = 2.0;
-    double FinalTemp = 3.0;
-    double TimeStep = 0.1;
     double *ExpectVal = new double[5];
     double *TotalExpectVal = new double[5];
     for( int i = 0; i < 5; i++ ) TotalExpectVal[i] = 0;
+
+//-------------------------------------------------------------------------
+//    Project 4c)
+    string filename;
+    int dim = 3;
+    int MCcycles = 1e6;
+    double InitialTemp = 2.0;
+    double FinalTemp = 3.0;
+    double TimeStep = 0.1;
     double timing;
     chrono::high_resolution_clock::time_point t1;
     chrono::high_resolution_clock::time_point t2;
@@ -50,14 +53,14 @@ int main( int argc, char *argv[] )
         outfile << setw(15) << setprecision(8) << "M";
         outfile << setw(15) << setprecision(8) << "M2";
         outfile << setw(15) << setprecision(8) << "M abs";
-        outfile << setw(15) << setprecision(8) << "Susceptibility";
-        outfile << setw(15) << setprecision(8) << "Heat capacity";
-        outfile << setw(15) << setprecision(8) << "Run time";
-        outfile << setw(15) << setprecision(8) << "No. of cycles" << endl;
+        outfile << setw(15) << setprecision(8) << "chi";
+        outfile << setw(15) << setprecision(8) << "C_V";
+        outfile << setw(15) << setprecision(8) << "Runtime";
+        outfile << setw(15) << setprecision(8) << "#cycles" << endl;
     }
-    for ( double T = InitialTemp; T <= FinalTemp; T+=TimeStep) {
+    for ( double T = InitialTemp; T <= FinalTemp; T += TimeStep) {
         if (my_rank==0) t1 = chrono::high_resolution_clock::now();
-        MetropolisSampling( dim, MCcycles, T, ExpectVal);
+        MetropolisSampling( dim, MCcycles, loopStart, loopStop, T, ExpectVal);
         for ( int i = 0; i < 5; i++ ) {
             MPI_Reduce(&ExpectVal[i], &TotalExpectVal[i], 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
         }
@@ -65,25 +68,26 @@ int main( int argc, char *argv[] )
             t2 = chrono::high_resolution_clock::now();
             chrono::duration<double> time_span = std::chrono::duration_cast<chrono::duration<double>>(t2 - t1);
             timing = time_span.count();
-            output(dim, T, TotalExpectVal, MCcycles, timing);
+            output( dim, T, TotalExpectVal, MCcycles, timing );
             cout << "T = " << T << " done...\n";
         }
     }
     outfile.close();
-
 //------------------------------------------------------------------------
+
+////------------------------------------------------------------------------
 ////     PROJECT 4b)
 //    int dim = 2;
 //    //  To get money results, 1e7 MCcycles is needed
 //    int MCcycles = 1e6;
 //    double T = 1.0;
-//    MetropolisSampling ( dim, MCcycles, T, ExpectVal );
+//    MetropolisSampling ( dim, MCcycles, 1, MCcycles, T, ExpectVal );
 //    cout << endl;
 //    cout << "<E> (analytic)             = " << E_() << endl;
 //    cout << "|M| (analytic)             = " << absM() << endl;
 //    cout << "Heat capacity (analytic)   = " << CV()/( dim*dim ) << endl;
 //    cout << "Susceptibility (analytic)  = " << xhi()/( dim*dim ) << endl;
-//--------------------------------------------------------------------------
+////--------------------------------------------------------------------------
 
     delete [] ExpectVal;
     delete [] TotalExpectVal;

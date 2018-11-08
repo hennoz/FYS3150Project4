@@ -5,7 +5,7 @@
 #include "initializelattice.h"
 using namespace std;
 
-void MetropolisSampling ( int dim, int MCcycles, double T, double *ExpectVal) {
+void MetropolisSampling ( int dim, int MCcycles, int loopStart, int loopStop, double T, double *ExpectVal) {
     //  Random number
     random_device rd;
     mt19937_64 gen( rd() );
@@ -25,7 +25,7 @@ void MetropolisSampling ( int dim, int MCcycles, double T, double *ExpectVal) {
     for ( int i = 0; i < 17; i += 4 ) EnergyDifference[i] = exp( -( i-8 )/T );
 
     //  Start Monte Carlo cycle
-    for ( int cycle = 1; cycle <= MCcycles; cycle++ ) {
+    for ( int cycle = loopStart; cycle <= loopStop; cycle++ ) {
         for ( int x = 0; x < dim; x++ ) {
             for ( int y = 0; y < dim; y++ ) {
                 int ix = SpinDistribution( gen );
@@ -58,16 +58,16 @@ void MetropolisSampling ( int dim, int MCcycles, double T, double *ExpectVal) {
     double varE   = ( meanE2 - meanE*meanE )/( dim*dim );
     double varM   = ( meanM2 - meanM*meanM )/( dim*dim );
 
-    cout << endl;
-    cout << "L                = " << dim << endl;
-    cout << "T                = " << T << endl;
-    cout << "Number of cycles = " << MCcycles << endl << endl;
+//    cout << endl;
+//    cout << "L                = " << dim << endl;
+//    cout << "T                = " << T << endl;
+//    cout << "Number of cycles = " << MCcycles << endl << endl;
 
-    cout << "Metropolis gives " << endl;
-    cout << "<E>              = " << meanE << endl;
-    cout << "|M|              = " << absM << endl;
-    cout << "Heat capacity    = " << varE << endl;
-    cout << "Susceptibility   = " << varM << endl;
+//    cout << "Metropolis gives " << endl;
+//    cout << "<E>              = " << meanE << endl;
+//    cout << "|M|              = " << absM << endl;
+//    cout << "Heat capacity    = " << varE << endl;
+//    cout << "Susceptibility   = " << varM << endl;
 
 //    ofstream outfile;
 //    outfile.open("info.txt");
@@ -85,5 +85,6 @@ void MetropolisSampling ( int dim, int MCcycles, double T, double *ExpectVal) {
     for ( int i = 0; i < dim; i++ ) {
         delete [] SpinMatrix[i];
     }
+    delete [] SpinMatrix;
     delete [] EnergyDifference;
 }

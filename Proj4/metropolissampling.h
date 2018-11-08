@@ -1,6 +1,6 @@
 #ifndef METROPOLISSAMPLING_H
 #define METROPOLISSAMPLING_H
 
-void MetropolisSampling ( int dim, int MCcycles, double T, double *ExpectVal );
+void MetropolisSampling ( int dim, int MCcycles,int loopStart, int loopStop, double T, double *ExpectVal );
 
 #endif // METROPOLISSAMPLING_H
