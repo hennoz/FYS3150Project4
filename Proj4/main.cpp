@@ -10,21 +10,7 @@
 using namespace std;
 ofstream outfile;
 
-void output(int dim, double T, double *ExpectVal, int MCcycles, double timing){
-  for( int i = 0; i < 5; i++ ) ExpectVal[i] /= MCcycles;
-  double E_variance = (ExpectVal[1] - ExpectVal[0]*ExpectVal[0])/dim/dim;
-  double M_variance = (ExpectVal[3] - ExpectVal[2]*ExpectVal[2])/dim/dim;
-  outfile << setw(15) << setprecision(8) << T;
-  outfile << setw(15) << setprecision(8) << ExpectVal[0]/dim/dim;
-  outfile << setw(15) << setprecision(8) << ExpectVal[1]/dim/dim;
-  outfile << setw(15) << setprecision(8) << ExpectVal[2]/dim/dim;
-  outfile << setw(15) << setprecision(8) << ExpectVal[3]/dim/dim;
-  outfile << setw(15) << setprecision(8) << ExpectVal[4]/dim/dim;
-  outfile << setw(15) << setprecision(8) << M_variance/T;
-  outfile << setw(15) << setprecision(8) << E_variance/(T*T);
-  outfile << setw(15) << setprecision(8) << timing;
-  outfile << setw(15) << setprecision(8) << MCcycles << endl;
-}
+void output( int dim, double T, double *ExpectVal, int MCcycles, double timing );
 
 int main( int argc, char *argv[] )
 {
@@ -102,4 +88,19 @@ int main( int argc, char *argv[] )
     delete [] ExpectVal;
     delete [] TotalExpectVal;
     return 0;
+}
+void output( int dim, double T, double *ExpectVal, int MCcycles, double timing ) {
+  for( int i = 0; i < 5; i++ ) ExpectVal[i] /= MCcycles;
+  double E_variance = (ExpectVal[1] - ExpectVal[0]*ExpectVal[0])/dim/dim;
+  double M_variance = (ExpectVal[3] - ExpectVal[2]*ExpectVal[2])/dim/dim;
+  outfile << setw(15) << setprecision(8) << T;
+  outfile << setw(15) << setprecision(8) << ExpectVal[0]/dim/dim;
+  outfile << setw(15) << setprecision(8) << ExpectVal[1]/dim/dim;
+  outfile << setw(15) << setprecision(8) << ExpectVal[2]/dim/dim;
+  outfile << setw(15) << setprecision(8) << ExpectVal[3]/dim/dim;
+  outfile << setw(15) << setprecision(8) << ExpectVal[4]/dim/dim;
+  outfile << setw(15) << setprecision(8) << M_variance/T;
+  outfile << setw(15) << setprecision(8) << E_variance/(T*T);
+  outfile << setw(15) << setprecision(8) << timing;
+  outfile << setw(15) << setprecision(8) << MCcycles << endl;
 }
