@@ -5,7 +5,8 @@
 #include "initializelattice.h"
 using namespace std;
 
-void MetropolisSampling ( int dim, int MCcycles, int loopStart, int loopStop, double T, double *ExpectVal) {
+void MetropolisSampling ( int dim, int MCcycles, int loopStart, int loopStop, double T, double *ExpectVal,
+                          int ordered ) {
     //  Random number
     random_device rd;
     mt19937_64 gen( rd() );
@@ -19,7 +20,7 @@ void MetropolisSampling ( int dim, int MCcycles, int loopStart, int loopStop, do
     double E, M = 0;
     for ( int i = 0; i < 5; i++ ) ExpectVal[i] = 0;
 
-    InitializeLattice ( dim, SpinMatrix, E, M );
+    InitializeLattice ( dim, SpinMatrix, E, M, ordered );
     double *EnergyDifference = new double[17];
 
     for ( int i = 0; i < 17; i += 4 ) EnergyDifference[i] = exp( -( i-8 )/T );

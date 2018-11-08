@@ -21,20 +21,21 @@ int main( int argc, char *argv[] )
 //-------------------------------------------------------------------------
 //    Project 4c)
     string filename;
-    int dim = 3;
+    int dim = 2;
     int MCcycles = 1e6;
     double InitialTemp = 2.0;
     double FinalTemp = 3.0;
     double TimeStep = 0.1;
     double timing;
+    int ordered = 0; //  Choose 1 for ordered matrix, choose 0 for random matrix
     chrono::high_resolution_clock::time_point t1;
     chrono::high_resolution_clock::time_point t2;
 
     int nProcs, my_rank;
 
     MPI_Init (&argc, &argv);
-    MPI_Comm_size (MPI_COMM_WORLD, &nProcs);
-    MPI_Comm_rank (MPI_COMM_WORLD, &my_rank);
+    MPI_Comm_size ( MPI_COMM_WORLD, &nProcs );
+    MPI_Comm_rank ( MPI_COMM_WORLD, &my_rank );
 
     MPI_Bcast (&dim, 1, MPI_INT, 0, MPI_COMM_WORLD);
     MPI_Bcast (&InitialTemp, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
@@ -45,7 +46,7 @@ int main( int argc, char *argv[] )
     int loopStart = my_rank*cycleInterval;
     int loopStop = (my_rank+1)*cycleInterval;
 
-    if (my_rank == 0){
+    if ( my_rank == 0 ) {
         outfile.open("Lattice" + to_string(dim) + "Cycles" + to_string(MCcycles) + ".txt");
         outfile << setw(15) << setprecision(8) << "T";
         outfile << setw(15) << setprecision(8) << "E";
@@ -59,12 +60,13 @@ int main( int argc, char *argv[] )
         outfile << setw(15) << setprecision(8) << "#cycles" << endl;
     }
     for ( double T = InitialTemp; T <= FinalTemp; T += TimeStep) {
+//        cout << "HELLO MONEY \n";
         if (my_rank==0) t1 = chrono::high_resolution_clock::now();
-        MetropolisSampling( dim, MCcycles, loopStart, loopStop, T, ExpectVal);
+        MetropolisSampling( dim, MCcycles, loopStart, loopStop, T, ExpectVal, ordered );
         for ( int i = 0; i < 5; i++ ) {
             MPI_Reduce(&ExpectVal[i], &TotalExpectVal[i], 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
         }
-            if (my_rank==0) {
+        if (my_rank==0) {
             t2 = chrono::high_resolution_clock::now();
             chrono::duration<double> time_span = std::chrono::duration_cast<chrono::duration<double>>(t2 - t1);
             timing = time_span.count();
@@ -72,6 +74,7 @@ int main( int argc, char *argv[] )
             cout << "T = " << T << " done...\n";
         }
     }
+
     outfile.close();
 //------------------------------------------------------------------------
 
@@ -91,8 +94,10 @@ int main( int argc, char *argv[] )
 
     delete [] ExpectVal;
     delete [] TotalExpectVal;
+    MPI_Finalize ();
     return 0;
 }
+
 void output( int dim, double T, double *ExpectVal, int MCcycles, double timing ) {
   for( int i = 0; i < 5; i++ ) ExpectVal[i] /= MCcycles;
   double E_variance = (ExpectVal[1] - ExpectVal[0]*ExpectVal[0])/dim/dim;
