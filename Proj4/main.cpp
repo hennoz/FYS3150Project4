@@ -18,20 +18,21 @@ int main( int argc, char *argv[] )
     double *TotalExpectVal = new double[5];
     for( int i = 0; i < 5; i++ ) TotalExpectVal[i] = 0;
 
-//-------------------------------------------------------------------------
-//    Project 4c)
+    //-------------------------------------------------------------------------
+    //    Project 4c)
     string filename;
-    int dim = 2;
-    int MCcycles = 1e6;
-    double InitialTemp = 2.0;
-    double FinalTemp = 3.0;
-    double TimeStep = 0.1;
+    int ordered = 1; //  Choose 1 for ordered matrix, choose 0 for random matrix
+    int dim = 20;   //  Dimension of the matrix L
+    int MCcycles = 10000;
+    double InitialTemp = 1.0;
+    double FinalTemp = 5.0;
+    double TimeStep = 0.05;
     double timing;
-    int ordered = 0; //  Choose 1 for ordered matrix, choose 0 for random matrix
     chrono::high_resolution_clock::time_point t1;
     chrono::high_resolution_clock::time_point t2;
 
-    int nProcs, my_rank;
+    int nProcs;
+    int my_rank;
 
     MPI_Init (&argc, &argv);
     MPI_Comm_size ( MPI_COMM_WORLD, &nProcs );
@@ -46,8 +47,10 @@ int main( int argc, char *argv[] )
     int loopStart = my_rank*cycleInterval;
     int loopStop = (my_rank+1)*cycleInterval;
 
+//    vector<vector<double>>int_poop_equals_pi;
     if ( my_rank == 0 ) {
-        outfile.open("Lattice" + to_string(dim) + "Cycles" + to_string(MCcycles) + ".txt");
+//        outfile.open("Lattice" + to_string(dim) + "Cycles" + to_string(MCcycles) + ".txt");
+//        outfile.open("4b" + to_string(dim) +  ".txt", std::ios_base::app);
         outfile << setw(15) << setprecision(8) << "T";
         outfile << setw(15) << setprecision(8) << "E";
         outfile << setw(15) << setprecision(8) << "E2";
@@ -60,9 +63,11 @@ int main( int argc, char *argv[] )
         outfile << setw(15) << setprecision(8) << "#cycles" << endl;
     }
     for ( double T = InitialTemp; T <= FinalTemp; T += TimeStep) {
-//        cout << "HELLO MONEY \n";
+        cout << "HELLO MONEY \n";
+        double acceptRatio = 0;
+
         if (my_rank==0) t1 = chrono::high_resolution_clock::now();
-        MetropolisSampling( dim, MCcycles, loopStart, loopStop, T, ExpectVal, ordered );
+        MetropolisSampling( dim, MCcycles, loopStart, loopStop, T, ExpectVal, ordered, acceptRatio );
         for ( int i = 0; i < 5; i++ ) {
             MPI_Reduce(&ExpectVal[i], &TotalExpectVal[i], 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
         }
@@ -73,24 +78,29 @@ int main( int argc, char *argv[] )
             output( dim, T, TotalExpectVal, MCcycles, timing );
             cout << "T = " << T << " done...\n";
         }
+        ofstream outfile;
+        outfile.open("/Users/hennoz/FYS3150Project4/acceptsRatioVsT.txt", std::ios_base::app);
+        outfile << setw(15) << setprecision(8) << T;
+        outfile << setw(15) << setprecision(8) << acceptRatio << endl;
+        outfile.close();
     }
 
     outfile.close();
-//------------------------------------------------------------------------
+    //------------------------------------------------------------------------
 
-////------------------------------------------------------------------------
-////     PROJECT 4b)
-//    int dim = 2;
-//    //  To get money results, 1e7 MCcycles is needed
-//    int MCcycles = 1e6;
-//    double T = 1.0;
-//    MetropolisSampling ( dim, MCcycles, 1, MCcycles, T, ExpectVal );
-//    cout << endl;
-//    cout << "<E> (analytic)             = " << E_() << endl;
-//    cout << "|M| (analytic)             = " << absM() << endl;
-//    cout << "Heat capacity (analytic)   = " << CV()/( dim*dim ) << endl;
-//    cout << "Susceptibility (analytic)  = " << xhi()/( dim*dim ) << endl;
-////--------------------------------------------------------------------------
+//    //------------------------------------------------------------------------
+//    //     PROJECT 4b)
+//        int dim = 2;
+//        //  To get money results, 1e7 MCcycles is needed
+//        int MCcycles = 1e6;
+//        double T = 1.0;
+//        MetropolisSampling ( dim, MCcycles, 1, MCcycles, T, ExpectVal, 1 );
+//        cout << endl;
+//        cout << "<E> (analytic)             = " << E_()/(dim*dim) << endl;
+//        cout << "|M| (analytic)             = " << absM()/(dim*dim) << endl;
+//        cout << "Heat capacity (analytic)   = " << CV()/( dim*dim ) << endl;
+//        cout << "Susceptibility (analytic)  = " << xhi()/( dim*dim ) << endl;
+//    //--------------------------------------------------------------------------
 
     delete [] ExpectVal;
     delete [] TotalExpectVal;
@@ -99,17 +109,17 @@ int main( int argc, char *argv[] )
 }
 
 void output( int dim, double T, double *ExpectVal, int MCcycles, double timing ) {
-  for( int i = 0; i < 5; i++ ) ExpectVal[i] /= MCcycles;
-  double E_variance = (ExpectVal[1] - ExpectVal[0]*ExpectVal[0])/dim/dim;
-  double M_variance = (ExpectVal[3] - ExpectVal[2]*ExpectVal[2])/dim/dim;
-  outfile << setw(15) << setprecision(8) << T;
-  outfile << setw(15) << setprecision(8) << ExpectVal[0]/dim/dim;
-  outfile << setw(15) << setprecision(8) << ExpectVal[1]/dim/dim;
-  outfile << setw(15) << setprecision(8) << ExpectVal[2]/dim/dim;
-  outfile << setw(15) << setprecision(8) << ExpectVal[3]/dim/dim;
-  outfile << setw(15) << setprecision(8) << ExpectVal[4]/dim/dim;
-  outfile << setw(15) << setprecision(8) << M_variance/T;
-  outfile << setw(15) << setprecision(8) << E_variance/(T*T);
-  outfile << setw(15) << setprecision(8) << timing;
-  outfile << setw(15) << setprecision(8) << MCcycles << endl;
+    for( int i = 0; i < 5; i++ ) ExpectVal[i] /= MCcycles;
+    double E_variance = (ExpectVal[1] - ExpectVal[0]*ExpectVal[0])/dim/dim;
+    double M_variance = (ExpectVal[3] - ExpectVal[2]*ExpectVal[2])/dim/dim;
+    outfile << setw(15) << setprecision(8) << T;
+    outfile << setw(15) << setprecision(8) << ExpectVal[0]/dim/dim;
+    outfile << setw(15) << setprecision(8) << ExpectVal[1]/dim/dim;
+    outfile << setw(15) << setprecision(8) << ExpectVal[2]/dim/dim;
+    outfile << setw(15) << setprecision(8) << ExpectVal[3]/dim/dim;
+    outfile << setw(15) << setprecision(8) << ExpectVal[4]/dim/dim;
+    outfile << setw(15) << setprecision(8) << M_variance/T;
+    outfile << setw(15) << setprecision(8) << E_variance/(T*T);
+    outfile << setw(15) << setprecision(8) << timing;
+    outfile << setw(15) << setprecision(8) << MCcycles << endl;
 }
