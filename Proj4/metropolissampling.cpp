@@ -25,15 +25,15 @@ void MetropolisSampling ( int dim, int MCcycles, int loopStart, int loopStop, do
     double *EnergyDifference = new double[17];
 
     //  4c --
-    vector<vector<int>> EMV;
-    EMV.resize(2);
-    int numOfAccepts = 0;
-    EMV[0].push_back( (int) E );
-    EMV[1].push_back( (int) M );
+//    vector<vector<int>> EMV;
+//    EMV.resize(2);
+//    EMV[0].push_back( (int) E );
+//    EMV[1].push_back( (int) M );
     //  --
     for ( int i = 0; i < 17; i += 4 ) EnergyDifference[i] = exp( -( i-8 )/T );
 
     //  Start Monte Carlo cycle
+//    int numOfAccepts = 0;
     for ( int cycle = loopStart; cycle <= loopStop; cycle++ ) {
         for ( int x = 0; x < dim; x++ ) {
             for ( int y = 0; y < dim; y++ ) {
@@ -50,12 +50,12 @@ void MetropolisSampling ( int dim, int MCcycles, int loopStart, int loopStop, do
 
                     M += 2*SpinMatrix[ix][iy];
                     E += DeltaE;
-                    numOfAccepts++;
+//                    numOfAccepts++;
                 }
             }
         }
-        EMV[0].push_back( E ); //  push_back in c++ is like append i python
-        EMV[1].push_back( fabs( M ) );
+//        EMV[0].push_back( E ); //  push_back in c++ is like append i python
+//        EMV[1].push_back( fabs( M ) );
 
         ExpectVal[0] += E;
         ExpectVal[1] += E*E;
@@ -73,7 +73,7 @@ void MetropolisSampling ( int dim, int MCcycles, int loopStart, int loopStop, do
 //        ofile.write(reinterpret_cast<const char*> (EMV[i].data()), EMV[i].size()*sizeof(int));
 //        ofile.close();
 //    }
-    Accept = numOfAccepts/double(loopStop);
+//    Accept = numOfAccepts/double(loopStop);
 
 //    double norm = 1/(( double ) MCcycles );
 //    double meanE  = ExpectVal[0]*norm;

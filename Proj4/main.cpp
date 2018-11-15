@@ -22,7 +22,7 @@ int main( int argc, char *argv[] )
     //    Project 4c)
     string filename;
     int ordered = 1; //  Choose 1 for ordered matrix, choose 0 for random matrix
-    int dim = 80;   //  Dimension of the matrix L
+    int dim = 100;   //  Dimension of the matrix L
     int MCcycles = 100000;
     double InitialTemp = 2.0;
     double FinalTemp = 2.6;

@@ -53,7 +53,7 @@ rc('font', family='serif')
 # xlabel(r'Number of Monte Carlo cycles', size=f_size)
 # tight_layout()
 # show()
-#############################################################################
+############################################################################
 # f_size = 28
 # cyc = 200
 # cyc_string = str(cyc)
@@ -97,7 +97,7 @@ rc('font', family='serif')
 # # plt.axis([0, cyc+2, -2.1, -1.5 ])
 # tight_layout()
 # show()
-###########################################################################
+##########################################################################
 # f_size = 26
 # data = np.loadtxt("acceptsRatioVsT.txt")
 #
@@ -113,11 +113,11 @@ rc('font', family='serif')
 # savefig("acceptRatio.pdf")
 # show()
 # ############################################################################
-f_size = 28
+f_size = 22
 data = np.loadtxt("4e_dim40_cycles100000.txt", skiprows=1)
 data1 = np.loadtxt("4e_dim60_cycles100000.txt", skiprows=1)
-# data2 = np.loadtxt("4e_dim80_cycles100000.txt", skiprows=1)
-# data3 = np.loadtxt("4e_dim100_cycles100000.txt", skiprows=1)
+data2 = np.loadtxt("4e_dim80_cycles100000.txt", skiprows=1)
+data3 = np.loadtxt("4e_dim100_cycles100000.txt", skiprows=1)
 
 
 
@@ -128,32 +128,44 @@ chi = data[:, 3]
 CV = data[:, 4]
 RunTime = data[:, 5]
 
-plot(T, E,'r')
-plot(T, data1[:,1],'b')
+plot(T, E,'r',label=r'$40\times40$')
+plot(T, data1[:,1],'b',label=r'$60\times60$')
+plot(T, data2[:,1],'g',label=r'$80\times80$')
+plot(T, data3[:,1],'k',label=r'$100\times100$')
+legend(fontsize = f_size-2)
 xlabel(r" Temperature [$kT/J$]", size=f_size)
 ylabel("Energy", size=f_size)
 xticks(size=f_size-2, rotation=30)
 yticks(size=f_size-2, rotation=30)
 tight_layout()
 show()
-plot(T, M,'r')
-plot(T, data1[:,2],'b')
+plot(T, M,'r',label=r'$40\times40$')
+plot(T, data1[:,2],'b',label=r'$60\times60$')
+plot(T, data2[:,2],'g',label=r'$80\times80$')
+plot(T, data3[:,2],'k',label=r'$100\times100$')
+legend(fontsize = f_size-2)
 xlabel(r" Temperature [$kT/J$]", size=f_size)
 ylabel("Magnetization", size=f_size)
 xticks(size=f_size-2, rotation=30)
 yticks(size=f_size-2, rotation=30)
 tight_layout()
 show()
-plot(T, chi,'r')
-plot(T, data1[:,3],'b')
+plot(T, chi,'r',label=r'$40\times40$')
+plot(T, data1[:,3],'b',label=r'$60\times60$')
+plot(T, data2[:,3],'g',label=r'$80\times80$')
+plot(T, data3[:,3],'k',label=r'$100\times100$')
+legend(fontsize = f_size-2)
 xlabel(r" Temperature [$kT/J$]", size=f_size)
 ylabel("Susceptibility", size=f_size)
 xticks(size=f_size-2, rotation=30)
 yticks(size=f_size-2, rotation=30)
 tight_layout()
 show()
-plot(T, CV,'r')
-plot(T, data1[:,4],'b')
+plot(T, CV,'r',label=r'$40\times40$')
+plot(T, data1[:,4],'b',label=r'$60\times60$')
+plot(T, data2[:,4],'g',label=r'$80\times80$')
+plot(T, data3[:,4],'k',label=r'$100\times100$')
+legend(fontsize = f_size-2)
 xlabel(r" Temperature [$kT/J$]", size=f_size)
 ylabel("Heat capacity", size=f_size)
 xticks(size=f_size-2, rotation=30)
