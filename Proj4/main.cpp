@@ -22,15 +22,17 @@ int main( int argc, char *argv[] )
     //    Project 4c)
     string filename;
     int ordered = 1; //  Choose 1 for ordered matrix, choose 0 for random matrix
-    int dim = 20;   //  Dimension of the matrix L
-    int MCcycles = 10000;
-    double InitialTemp = 1.0;
-    double FinalTemp = 5.0;
+    int dim = 80;   //  Dimension of the matrix L
+    int MCcycles = 100000;
+    double InitialTemp = 2.0;
+    double FinalTemp = 2.6;
     double TimeStep = 0.05;
     double timing;
     chrono::high_resolution_clock::time_point t1;
     chrono::high_resolution_clock::time_point t2;
 
+
+    //  Initialize parallellization
     int nProcs;
     int my_rank;
 
@@ -38,6 +40,8 @@ int main( int argc, char *argv[] )
     MPI_Comm_size ( MPI_COMM_WORLD, &nProcs );
     MPI_Comm_rank ( MPI_COMM_WORLD, &my_rank );
 
+
+    //  Broadcast variables to all nodes on my CrapBook Air
     MPI_Bcast (&dim, 1, MPI_INT, 0, MPI_COMM_WORLD);
     MPI_Bcast (&InitialTemp, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
     MPI_Bcast (&FinalTemp, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
@@ -47,15 +51,17 @@ int main( int argc, char *argv[] )
     int loopStart = my_rank*cycleInterval;
     int loopStop = (my_rank+1)*cycleInterval;
 
-//    vector<vector<double>>int_poop_equals_pi;
     if ( my_rank == 0 ) {
+        outfile.open("/Users/hennoz/FYS3150Project4/4e_Dim"
+                     + to_string(dim) + "_cycles" + to_string(MCcycles) +
+                     ".txt", std::ios_base::app);
 //        outfile.open("Lattice" + to_string(dim) + "Cycles" + to_string(MCcycles) + ".txt");
-//        outfile.open("4b" + to_string(dim) +  ".txt", std::ios_base::app);
+//        outfile.open("4b" + to_string(dim) +  ".txt", std::ios_base::app);        
         outfile << setw(15) << setprecision(8) << "T";
         outfile << setw(15) << setprecision(8) << "E";
-        outfile << setw(15) << setprecision(8) << "E2";
-        outfile << setw(15) << setprecision(8) << "M";
-        outfile << setw(15) << setprecision(8) << "M2";
+//        outfile << setw(15) << setprecision(8) << "E2";
+//        outfile << setw(15) << setprecision(8) << "M";
+//        outfile << setw(15) << setprecision(8) << "M2";
         outfile << setw(15) << setprecision(8) << "M abs";
         outfile << setw(15) << setprecision(8) << "chi";
         outfile << setw(15) << setprecision(8) << "C_V";
@@ -78,14 +84,14 @@ int main( int argc, char *argv[] )
             output( dim, T, TotalExpectVal, MCcycles, timing );
             cout << "T = " << T << " done...\n";
         }
-        ofstream outfile;
-        outfile.open("/Users/hennoz/FYS3150Project4/acceptsRatioVsT.txt", std::ios_base::app);
-        outfile << setw(15) << setprecision(8) << T;
-        outfile << setw(15) << setprecision(8) << acceptRatio << endl;
-        outfile.close();
+//        ofstream outfile;
+//        outfile.open("/Users/hennoz/FYS3150Project4/acceptsRatioVsT.txt", std::ios_base::app);
+//        outfile << setw(15) << setprecision(8) << T;
+//        outfile << setw(15) << setprecision(8) << acceptRatio << endl;
+//        outfile.close();
     }
-
     outfile.close();
+
     //------------------------------------------------------------------------
 
 //    //------------------------------------------------------------------------
@@ -111,15 +117,17 @@ int main( int argc, char *argv[] )
 void output( int dim, double T, double *ExpectVal, int MCcycles, double timing ) {
     for( int i = 0; i < 5; i++ ) ExpectVal[i] /= MCcycles;
     double E_variance = (ExpectVal[1] - ExpectVal[0]*ExpectVal[0])/dim/dim;
-    double M_variance = (ExpectVal[3] - ExpectVal[2]*ExpectVal[2])/dim/dim;
-    outfile << setw(15) << setprecision(8) << T;
-    outfile << setw(15) << setprecision(8) << ExpectVal[0]/dim/dim;
-    outfile << setw(15) << setprecision(8) << ExpectVal[1]/dim/dim;
-    outfile << setw(15) << setprecision(8) << ExpectVal[2]/dim/dim;
-    outfile << setw(15) << setprecision(8) << ExpectVal[3]/dim/dim;
-    outfile << setw(15) << setprecision(8) << ExpectVal[4]/dim/dim;
-    outfile << setw(15) << setprecision(8) << M_variance/T;
-    outfile << setw(15) << setprecision(8) << E_variance/(T*T);
-    outfile << setw(15) << setprecision(8) << timing;
-    outfile << setw(15) << setprecision(8) << MCcycles << endl;
+//    double M_variance = (ExpectVal[3] - ExpectVal[2]*ExpectVal[2])/dim/dim;
+    double M_variance = (ExpectVal[3] - ExpectVal[4]*ExpectVal[4])/dim/dim;
+
+    outfile << setw(15) << setprecision(8) << T;                    //  Temp
+    outfile << setw(15) << setprecision(8) << ExpectVal[0]/dim/dim; //  <E>
+//    outfile << setw(15) << setprecision(8) << ExpectVal[1]/dim/dim; //  <E^2>
+//    outfile << setw(15) << setprecision(8) << ExpectVal[2]/dim/dim; //  <M>
+//    outfile << setw(15) << setprecision(8) << ExpectVal[3]/dim/dim; //  <M^2> = |M|^2
+    outfile << setw(15) << setprecision(8) << ExpectVal[4]/dim/dim; //  |M|
+    outfile << setw(15) << setprecision(8) << M_variance/T;         //  chi
+    outfile << setw(15) << setprecision(8) << E_variance/(T*T);     //  C_V
+    outfile << setw(15) << setprecision(8) << timing;               //  RunTime
+    outfile << setw(15) << setprecision(8) << MCcycles << endl;     //  # MCcycles
 }

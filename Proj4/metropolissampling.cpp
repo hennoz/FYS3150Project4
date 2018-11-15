@@ -28,8 +28,8 @@ void MetropolisSampling ( int dim, int MCcycles, int loopStart, int loopStop, do
     vector<vector<int>> EMV;
     EMV.resize(2);
     int numOfAccepts = 0;
-    EMV[0].push_back((int) E);
-    EMV[1].push_back((int) M);
+    EMV[0].push_back( (int) E );
+    EMV[1].push_back( (int) M );
     //  --
     for ( int i = 0; i < 17; i += 4 ) EnergyDifference[i] = exp( -( i-8 )/T );
 
@@ -47,13 +47,13 @@ void MetropolisSampling ( int dim, int MCcycles, int loopStart, int loopStop, do
                         SpinMatrix[PeriodicBoundary( ix, dim, 1 )][iy] );
                 if ( RandomNumberGenerator( gen ) <= EnergyDifference[DeltaE + 8] ) {
                     SpinMatrix[ix][iy] *= -1.0; // Flip one spin => new configuration
+
                     M += 2*SpinMatrix[ix][iy];
                     E += DeltaE;
                     numOfAccepts++;
                 }
             }
         }
-
         EMV[0].push_back( E ); //  push_back in c++ is like append i python
         EMV[1].push_back( fabs( M ) );
 
@@ -64,7 +64,7 @@ void MetropolisSampling ( int dim, int MCcycles, int loopStart, int loopStop, do
         ExpectVal[4] += fabs( M );
 
     }
-    ofstream ofile;
+//    ofstream ofile;
     //  4c) write to binary file
 //    for(int i = 0; i < 2; i++){
 //        ofile.open("/Users/hennoz/FYS3150Project4/" + to_string(i) + "calibrate" +
@@ -75,14 +75,14 @@ void MetropolisSampling ( int dim, int MCcycles, int loopStart, int loopStop, do
 //    }
     Accept = numOfAccepts/double(loopStop);
 
-    double norm = 1/(( double ) MCcycles );
-    double meanE  = ExpectVal[0]*norm;
-    double meanE2 = ExpectVal[1]*norm;
-    double meanM  = ExpectVal[2]*norm;
-    double meanM2 = ExpectVal[3]*norm;
-    double absM   = ExpectVal[4]*norm;
-    double varE   = ( meanE2 - meanE*meanE )/( dim*dim );
-    double varM   = ( meanM2 - meanM*meanM )/( dim*dim );
+//    double norm = 1/(( double ) MCcycles );
+//    double meanE  = ExpectVal[0]*norm;
+//    double meanE2 = ExpectVal[1]*norm;
+//    double meanM  = ExpectVal[2]*norm;
+//    double meanM2 = ExpectVal[3]*norm;
+//    double absM   = ExpectVal[4]*norm;
+//    double varE   = ( meanE2 - meanE*meanE )/( dim*dim );
+//    double varM   = ( meanM2 - meanM*meanM )/( dim*dim );
 
 //    cout << endl;
 //    cout << "L                = " << dim << endl;
