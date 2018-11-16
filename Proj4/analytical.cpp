@@ -25,3 +25,4 @@ double absM() {
     double Z = 4*cosh( 8 ) + 12;
     return 8/Z*(exp( 8 ) + 2 );
 }
+

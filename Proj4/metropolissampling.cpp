@@ -24,7 +24,9 @@ void MetropolisSampling ( int dim, int MCcycles, int loopStart, int loopStop, do
     InitializeLattice ( dim, SpinMatrix, E, M, ordered );
     double *EnergyDifference = new double[17];
 
-    //  4c --
+      //  4c -- 4e
+    //  Setup energy and magnetization vector
+    //  for calculations of acceptratio
 //    vector<vector<int>> EMV;
 //    EMV.resize(2);
 //    EMV[0].push_back( (int) E );
@@ -64,8 +66,13 @@ void MetropolisSampling ( int dim, int MCcycles, int loopStart, int loopStop, do
         ExpectVal[4] += fabs( M );
 
     }
-//    ofstream ofile;
-    //  4c) write to binary file
+//    //  4d)
+    ofstream ofile;
+//    ofile.open("/Users/hennoz/FYS3150Project4/energiesT24.bin", ofstream::binary);
+//    ofile.write(reinterpret_cast<const char*> (EMV[0].data()), EMV[0].size()*sizeof(int));
+//    ofile.close();
+
+//    //  4c) write to binary file
 //    for(int i = 0; i < 2; i++){
 //        ofile.open("/Users/hennoz/FYS3150Project4/" + to_string(i) + "calibrate" +
 //                   to_string(dim) + "Cycles" + to_string(MCcycles) + "Ordered" + to_string(ordered)

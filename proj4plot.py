@@ -1,6 +1,10 @@
 from pylab import *
 rc('text', usetex=True)
 rc('font', family='serif')
+
+import matplotlib.mlab as mlab
+from scipy.stats import norm
+
 # # f_size = 22 [scale=0.55] for centered plots, 28 for neighboring plots [scale=0.44]
 #
 # filename = "4b2.txt"
@@ -53,7 +57,7 @@ rc('font', family='serif')
 # xlabel(r'Number of Monte Carlo cycles', size=f_size)
 # tight_layout()
 # show()
-############################################################################
+# ###########################################################################
 # f_size = 28
 # cyc = 200
 # cyc_string = str(cyc)
@@ -75,7 +79,7 @@ rc('font', family='serif')
 # # plt.plot(cycles, MRvalues)
 # # plt.plot(cycles, MOvalues)
 # xlabel(r"Number of Monte Carlo cycles", size=f_size)
-# ylabel(r"$\langle E \rangle$", size=f_size)
+# ylabel(r"Energy", size=f_size)
 # xticks(size=f_size-2, rotation=30)
 # yticks(size=f_size-2, rotation=30)
 # legend(fontsize=f_size-6)
@@ -89,7 +93,7 @@ rc('font', family='serif')
 # # plt.plot(cycles, MRvalues)
 # # plt.plot(cycles, MOvalues)
 # xlabel(r"Number of Monte Carlo cycles", size=f_size)
-# ylabel(r"$\langle |M| \rangle$", size=f_size)
+# ylabel(r"Magnetization", size=f_size)
 # xticks(size=f_size-2, rotation=30)
 # yticks(size=f_size-2, rotation=30)
 # legend(fontsize=f_size-6)
@@ -113,62 +117,102 @@ rc('font', family='serif')
 # savefig("acceptRatio.pdf")
 # show()
 # ############################################################################
-f_size = 22
-data = np.loadtxt("4e_dim40_cycles100000.txt", skiprows=1)
-data1 = np.loadtxt("4e_dim60_cycles100000.txt", skiprows=1)
-data2 = np.loadtxt("4e_dim80_cycles100000.txt", skiprows=1)
-data3 = np.loadtxt("4e_dim100_cycles100000.txt", skiprows=1)
 
 
+##############################################################################
+# f_size = 28
+# l_size = f_size - 9
+# # data = np.loadtxt("4e_dim40_cycles100000.txt", skiprows=1)
+# # data1 = np.loadtxt("4e_dim60_cycles100000.txt", skiprows=1)
+# # data2 = np.loadtxt("4e_dim80_cycles100000.txt", skiprows=1)
+# # data3 = np.loadtxt("4e_dim100_cycles100000.txt", skiprows=1)
+#
+# # data = np.loadtxt("A_TEST_4e_dim40_cycles1000.txt", skiprows=1)
+# # data1 = np.loadtxt("A_TEST_4e_dim60_cycles1000.txt", skiprows=1)
+# # data2 = np.loadtxt("A_TEST_4e_dim80_cycles1000.txt", skiprows=1)
+# # data3 = np.loadtxt("A_TEST_4e_dim100_cycles1000.txt", skiprows=1)
+#
+# data = np.loadtxt("MONEY_4e_dim40_cycles100000.txt", skiprows=1)
+# data1 = np.loadtxt("MONEY_4e_dim60_cycles100000.txt", skiprows=1)
+# data2 = np.loadtxt("MONEY_4e_dim80_cycles100000.txt", skiprows=1)
+# data3 = np.loadtxt("MONEY_4e_dim100_cycles100000.txt", skiprows=1)
+#
+# T = data[:, 0]
+# E = data[:, 1]
+# M = data[:, 5]
+# chi = data[:, 6]
+# CV = data[:, 7]
+# RunTime = data[:, 8]
+#
+# plot(T, E,'r',label=r'$40\times40$')
+# plot(T, data1[:,1],'b',label=r'$60\times60$')
+# plot(T, data2[:,1],'g',label=r'$80\times80$')
+# plot(T, data3[:,1],'k',label=r'$100\times100$')
+# legend(fontsize = l_size)
+# xlabel(r" Temperature [$kT/J$]", size=f_size)
+# ylabel("Energy", size=f_size)
+# xticks(size=f_size-2, rotation=30)
+# yticks(size=f_size-2, rotation=30)
+# tight_layout()
+# show()
+# plot(T, M,'r',label=r'$40\times40$')
+# plot(T, data1[:,5],'b',label=r'$60\times60$')
+# plot(T, data2[:,5],'g',label=r'$80\times80$')
+# plot(T, data3[:,5],'k',label=r'$100\times100$')
+# legend(fontsize = l_size)
+# xlabel(r" Temperature [$kT/J$]", size=f_size)
+# ylabel("Magnetization", size=f_size)
+# xticks(size=f_size-2, rotation=30)
+# yticks(size=f_size-2, rotation=30)
+# tight_layout()
+# show()
+# plot(T, chi,'r',label=r'$40\times40$')
+# plot(T, data1[:,6],'b',label=r'$60\times60$')
+# plot(T, data2[:,6],'g',label=r'$80\times80$')
+# plot(T, data3[:,6],'k',label=r'$100\times100$')
+# legend(fontsize = l_size)
+# xlabel(r" Temperature [$kT/J$]", size=f_size)
+# ylabel("Susceptibility", size=f_size)
+# xticks(size=f_size-2, rotation=30)
+# yticks(size=f_size-2, rotation=30)
+# tight_layout()
+# show()
+# plot(T, CV,'r',label=r'$40\times40$')
+# plot(T, data1[:,7],'b',label=r'$60\times60$')
+# plot(T, data2[:,7],'g',label=r'$80\times80$')
+# plot(T, data3[:,7],'k',label=r'$100\times100$')
+# legend(fontsize = l_size)
+# xlabel(r" Temperature [$kT/J$]", size=f_size)
+# ylabel("Heat capacity", size=f_size)
+# xticks(size=f_size-2, rotation=30)
+# yticks(size=f_size-2, rotation=30)
+# tight_layout()
+# show()
+# ##############################################################################
 
-T = data[:, 0]
-E = data[:, 1]
-M = data[:, 2]
-chi = data[:, 3]
-CV = data[:, 4]
-RunTime = data[:, 5]
+energies = fromfile("energies.bin",dtype=int32)
+indices = int(round(len(energies)*0.9))
+sigma10 = 0.00774658
 
-plot(T, E,'r',label=r'$40\times40$')
-plot(T, data1[:,1],'b',label=r'$60\times60$')
-plot(T, data2[:,1],'g',label=r'$80\times80$')
-plot(T, data3[:,1],'k',label=r'$100\times100$')
-legend(fontsize = f_size-2)
-xlabel(r" Temperature [$kT/J$]", size=f_size)
-ylabel("Energy", size=f_size)
+energies24 = fromfile("energiesT24.bin",dtype=int32)
+indices24 = int(round(len(energies24)*0.9))
+sigma24 = 8.1092
+# 
+# x = linspace(-800,-200,1000)
+#
+
+f_size = 28
+
+data = energies24
+
+n,bins,patches=hist(data,45,normed=1, facecolor='green')
+(mu,sigma) = norm.fit(data)
+y = mlab.normpdf(bins,mu,sigma)
+plot(bins,y,'r--',linewidth=2)
 xticks(size=f_size-2, rotation=30)
 yticks(size=f_size-2, rotation=30)
-tight_layout()
-show()
-plot(T, M,'r',label=r'$40\times40$')
-plot(T, data1[:,2],'b',label=r'$60\times60$')
-plot(T, data2[:,2],'g',label=r'$80\times80$')
-plot(T, data3[:,2],'k',label=r'$100\times100$')
-legend(fontsize = f_size-2)
-xlabel(r" Temperature [$kT/J$]", size=f_size)
-ylabel("Magnetization", size=f_size)
-xticks(size=f_size-2, rotation=30)
-yticks(size=f_size-2, rotation=30)
-tight_layout()
-show()
-plot(T, chi,'r',label=r'$40\times40$')
-plot(T, data1[:,3],'b',label=r'$60\times60$')
-plot(T, data2[:,3],'g',label=r'$80\times80$')
-plot(T, data3[:,3],'k',label=r'$100\times100$')
-legend(fontsize = f_size-2)
-xlabel(r" Temperature [$kT/J$]", size=f_size)
-ylabel("Susceptibility", size=f_size)
-xticks(size=f_size-2, rotation=30)
-yticks(size=f_size-2, rotation=30)
-tight_layout()
-show()
-plot(T, CV,'r',label=r'$40\times40$')
-plot(T, data1[:,4],'b',label=r'$60\times60$')
-plot(T, data2[:,4],'g',label=r'$80\times80$')
-plot(T, data3[:,4],'k',label=r'$100\times100$')
-legend(fontsize = f_size-2)
-xlabel(r" Temperature [$kT/J$]", size=f_size)
-ylabel("Heat capacity", size=f_size)
-xticks(size=f_size-2, rotation=30)
-yticks(size=f_size-2, rotation=30)
+ylabel(r"Probability", size=f_size)
+xlabel(r"Energy", size=f_size)
+legend(["Gaussian","Energy"], fontsize=f_size-8)
 tight_layout()
 show()
