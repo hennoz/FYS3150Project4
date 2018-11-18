@@ -27,36 +27,39 @@ void MetropolisSampling ( int dim, int MCcycles, int loopStart, int loopStop, do
       //  4c -- 4e
     //  Setup energy and magnetization vector
     //  for calculations of acceptratio
-//    vector<vector<int>> EMV;
+//    vector<vector<int>> EMV;      //  Initiate Energy,Magnetization vector
 //    EMV.resize(2);
-//    EMV[0].push_back( (int) E );
+//    EMV[0].push_back( (int) E );  //  Append first values
 //    EMV[1].push_back( (int) M );
     //  --
     for ( int i = 0; i < 17; i += 4 ) EnergyDifference[i] = exp( -( i-8 )/T );
 
     //  Start Monte Carlo cycle
-//    int numOfAccepts = 0;
+//    int numOfAccepts = 0;                           //  Initiate counter
     for ( int cycle = loopStart; cycle <= loopStop; cycle++ ) {
-        for ( int x = 0; x < dim; x++ ) {
-            for ( int y = 0; y < dim; y++ ) {
-                int ix = SpinDistribution( gen );
-                int iy = SpinDistribution( gen );
-                //  Edge elements are 'ignored' using the next couple of lines
+        for ( int x = 0; x < dim; x++ ) {           //  Sweep lattice in x-direction
+            for ( int y = 0; y < dim; y++ ) {       //  Sweep lattice in y-direction
+                int ix = SpinDistribution( gen );   //  Random int \in[0,1]
+                int iy = SpinDistribution( gen );   //  Random int \in[0,1]
+                /*Edge elements are 'ignored' using the next couple of lines,
+                  this is quite demanding for large lattice.
+                  An alternative way would've been 'mazing, cuz time is money,
+                  sadly this was the best I could do*/
                 int DeltaE = 2*SpinMatrix[ix][iy]*
                         ( SpinMatrix[ix][PeriodicBoundary( iy, dim, -1 )] +
                         SpinMatrix[PeriodicBoundary( ix, dim, -1 )][iy] +
                         SpinMatrix[ix][PeriodicBoundary( iy, dim, 1 )] +
                         SpinMatrix[PeriodicBoundary( ix, dim, 1 )][iy] );
+                //  If r \leq w, accept new configuration, else keep old
                 if ( RandomNumberGenerator( gen ) <= EnergyDifference[DeltaE + 8] ) {
-                    SpinMatrix[ix][iy] *= -1.0; // Flip one spin => new configuration
-
-                    M += 2*SpinMatrix[ix][iy];
-                    E += DeltaE;
-//                    numOfAccepts++;
+                    SpinMatrix[ix][iy] *= -1.0;     // Flip one spin => new configuration
+                    M += 2*SpinMatrix[ix][iy];      //  Update magnetization
+                    E += DeltaE;                    //  Update energy
+//                    numOfAccepts++;                 //  Count number of accepted configurations
                 }
             }
         }
-//        EMV[0].push_back( E ); //  push_back in c++ is like append i python
+//        EMV[0].push_back( E );            //  "push_back" in c++ is like "append" in python
 //        EMV[1].push_back( fabs( M ) );
 
         ExpectVal[0] += E;
@@ -66,7 +69,7 @@ void MetropolisSampling ( int dim, int MCcycles, int loopStart, int loopStop, do
         ExpectVal[4] += fabs( M );
 
     }
-//    //  4d)
+//    //  4d) write to binary file the energies to compute histogram for T=1.0 and T=2.4
     ofstream ofile;
 //    ofile.open("/Users/hennoz/FYS3150Project4/energiesT24.bin", ofstream::binary);
 //    ofile.write(reinterpret_cast<const char*> (EMV[0].data()), EMV[0].size()*sizeof(int));
@@ -80,6 +83,7 @@ void MetropolisSampling ( int dim, int MCcycles, int loopStart, int loopStop, do
 //        ofile.write(reinterpret_cast<const char*> (EMV[i].data()), EMV[i].size()*sizeof(int));
 //        ofile.close();
 //    }
+
 //    Accept = numOfAccepts/double(loopStop);
 
 //    double norm = 1/(( double ) MCcycles );

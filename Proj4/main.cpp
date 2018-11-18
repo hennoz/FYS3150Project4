@@ -14,9 +14,9 @@ void output( int dim, double T, double *ExpectVal, int MCcycles, double timing )
 
 int main( int argc, char *argv[] )
 {
-    for ( int i = 40; i <= 100; i += 20 ) {
+    for ( int i = 100; i <= 100; i += 20 ) { //  Loop thru main for L=40,60,80,100
 
-        double *ExpectVal = new double[5];
+        double *ExpectVal = new double[5];          //  Should contain E,E^2,M,M^2,|M|
         double *TotalExpectVal = new double[5];
         for( int i = 0; i < 5; i++ ) TotalExpectVal[i] = 0;
 
@@ -25,24 +25,26 @@ int main( int argc, char *argv[] )
         string filename;
         int ordered = 0; //  Choose 1 for ordered matrix, choose 0 for random matrix
         int dim = i;   //  Dimension of the matrix L
-        int MCcycles = 1e5;
-        double InitialTemp = 2.2;
-        double FinalTemp = 2.34;
-        double TimeStep = 0.01;
+        int MCcycles = 1000000;             //1e6
+//        double InitialTemp = 2.249;     //2.260
+//        double FinalTemp = 2.289;       //  2.278
+        double InitialTemp = 2.260;
+        double FinalTemp = 2.278;
+
+        double TimeStep = 0.001;
         double timing;
         chrono::high_resolution_clock::time_point t1;
         chrono::high_resolution_clock::time_point t2;
 
-        //  Initialize parallellization
-        int nProcs;
-        int my_rank;
-
+        //  Initialize parallellization with MPI
+        int nProcs;     //  Number of processes
+        int my_rank;    //  Rank
         MPI_Init (&argc, &argv);
         MPI_Comm_size ( MPI_COMM_WORLD, &nProcs );
         MPI_Comm_rank ( MPI_COMM_WORLD, &my_rank );
 
 
-        //  Broadcast variables to all (2) nodes on my CrapBook Air
+        //  Broadcast dim, InitialTemp, FinalTemp and TimeStep to all processes
         MPI_Bcast (&dim, 1, MPI_INT, 0, MPI_COMM_WORLD);
         MPI_Bcast (&InitialTemp, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
         MPI_Bcast (&FinalTemp, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
@@ -52,10 +54,11 @@ int main( int argc, char *argv[] )
         int loopStart = my_rank*cycleInterval;
         int loopStop = (my_rank+1)*cycleInterval;
 
+        //  Write to file first line to make easy to read for humans
         if ( my_rank == 0 ) {
-        outfile.open("/Users/hennoz/FYS3150Project4/NarrowT_4e_Dim" + to_string(dim) + "_cycles" + to_string(MCcycles) + ".txt", std::ios_base::app);
-//        outfile.open("Lattice" + to_string(dim) + "Cycles" + to_string(MCcycles) + ".txt");
-//        outfile.open("4b" + to_string(dim) +  ".txt", std::ios_base::app);
+            outfile.open("/Users/hennoz/FYS3150Project4/SUPER_4e_Dim" + to_string(dim) + "_cycles" + to_string(MCcycles) + ".txt", std::ios_base::app);
+    //        outfile.open("Lattice" + to_string(dim) + "Cycles" + to_string(MCcycles) + ".txt");
+    //        outfile.open("4b" + to_string(dim) +  ".txt", std::ios_base::app);
             outfile << setw(15) << setprecision(8) << "T";
             outfile << setw(15) << setprecision(8) << "E";
             outfile << setw(15) << setprecision(8) << "E2";
@@ -68,10 +71,9 @@ int main( int argc, char *argv[] )
             outfile << setw(15) << setprecision(8) << "#cycles" << endl;
         }
         for ( double T = InitialTemp; T <= FinalTemp; T += TimeStep) {
-            //        cout << "HELLO MONEY \n";
-            double acceptRatio = 0;
-
+            double acceptRatio = 0; //  Reset
             if (my_rank==0) t1 = chrono::high_resolution_clock::now();
+
             MetropolisSampling( dim, MCcycles, loopStart, loopStop, T, ExpectVal, ordered, acceptRatio );
             for ( int i = 0; i < 5; i++ ) {
                 MPI_Reduce(&ExpectVal[i], &TotalExpectVal[i], 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
