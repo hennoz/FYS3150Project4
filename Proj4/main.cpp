@@ -14,7 +14,7 @@ void output( int dim, double T, double *ExpectVal, int MCcycles, double timing )
 
 int main( int argc, char *argv[] )
 {
-    for ( int i = 100; i <= 100; i += 20 ) { //  Loop thru main for L=40,60,80,100
+    for ( int i = 80; i <= 80; i += 20 ) { //  Loop thru main for L=40,60,80,100
 
         double *ExpectVal = new double[5];          //  Should contain E,E^2,M,M^2,|M|
         double *TotalExpectVal = new double[5];
@@ -24,11 +24,11 @@ int main( int argc, char *argv[] )
         //    Project 4c)
         string filename;
         int ordered = 0; //  Choose 1 for ordered matrix, choose 0 for random matrix
-        int dim = i;   //  Dimension of the matrix L
-        int MCcycles = 1000000;             //1e6
-//        double InitialTemp = 2.249;     //2.260
-//        double FinalTemp = 2.289;       //  2.278
-        double InitialTemp = 2.260;
+        int dim = 140;   //  Dimension of the matrix L
+        int MCcycles = 100000;             //1e6
+//        double InitialTemp = 2.0;     //2.260
+//        double FinalTemp = 2.6;       //  2.278
+        double InitialTemp = 2.260;   //  For mill cycles
         double FinalTemp = 2.278;
 
         double TimeStep = 0.001;
@@ -56,7 +56,7 @@ int main( int argc, char *argv[] )
 
         //  Write to file first line to make easy to read for humans
         if ( my_rank == 0 ) {
-            outfile.open("/Users/hennoz/FYS3150Project4/SUPER_4e_Dim" + to_string(dim) + "_cycles" + to_string(MCcycles) + ".txt", std::ios_base::app);
+            outfile.open("/Users/hennoz/FYS3150Project4/CRAP_4e_Dim" + to_string(dim) + "_cycles" + to_string(MCcycles) + ".txt", std::ios_base::app);
     //        outfile.open("Lattice" + to_string(dim) + "Cycles" + to_string(MCcycles) + ".txt");
     //        outfile.open("4b" + to_string(dim) +  ".txt", std::ios_base::app);
             outfile << setw(15) << setprecision(8) << "T";
